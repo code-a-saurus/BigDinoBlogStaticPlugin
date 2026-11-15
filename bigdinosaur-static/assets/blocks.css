@@ -1,0 +1,152 @@
+/* Core block rules the site's content relies on, translated to the site
+   vocabulary (image, gallery, quote, pullquote, code, columns, embed, drop-cap,
+   align-*). Assets::site_css() puts this file before the theme CSS so the
+   cascade order matches the editor site, where core's block styles load first.
+   :where() keeps the base rules at zero specificity, so theme rules win. */
+
+/* Lazy images with sizes="auto" reserve an intrinsic size until they load. */
+img:is([sizes=auto i],[sizes^="auto," i]) { contain-intrinsic-size: 3000px 1500px; }
+
+:where(figure) { margin: 0 0 1em; }
+ol, ul { box-sizing: border-box; }
+.align-center { clear: both; }
+
+/* Base drop cap (float and size); the theme restyles face, size and margins. */
+.drop-cap:not(:focus)::first-letter {
+	float: left;
+	font-size: 8.4em;
+	font-style: normal;
+	font-weight: 100;
+	line-height: .68;
+	margin: .05em .1em 0 0;
+	text-transform: uppercase;
+}
+
+/* Images. Both shapes occur: a figure.image carrying the align-* class itself,
+   and a div.image wrapping a figure that carries it. Aligned figures are
+   display: table so a caption stays as wide as its image. */
+.image > a, .image > figure > a { display: inline-block; }
+.image img { box-sizing: border-box; height: auto; max-width: 100%; vertical-align: bottom; }
+.image.align-center { text-align: center; }
+.image.align-wide > a { width: 100%; }
+.image.align-wide img { height: auto; width: 100%; }
+.image .align-center, .image .align-left, .image .align-right,
+.image.align-center, .image.align-left, .image.align-right { display: table; }
+.image .align-center > figcaption, .image .align-left > figcaption, .image .align-right > figcaption,
+.image.align-center > figcaption, .image.align-left > figcaption, .image.align-right > figcaption { caption-side: bottom; display: table-caption; }
+.image .align-left { float: left; margin: .5em 1em .5em 0; }
+.image .align-right { float: right; margin: .5em 0 .5em 1em; }
+.image .align-center { margin-left: auto; margin-right: auto; }
+.image :where(figcaption) { margin-bottom: 1em; margin-top: .5em; }
+.image figure { margin: 0; }
+
+/* Galleries: flex rows of figures. The column count arrives as data-columns
+   (set from core's columns-N class) and fixes the figure width. Captions
+   overlay the bottom of the image on a blurred gradient; cropped galleries
+   use object-fit so every image fills its cell. */
+.gallery { display: flex; flex-wrap: wrap; align-items: normal; gap: .5em; }
+.gallery > * { margin: 0; }
+.gallery figure.image {
+	box-sizing: border-box;
+	display: flex;
+	flex-direction: column;
+	flex-grow: 1;
+	justify-content: center;
+	margin: 0;
+	max-width: 100%;
+	position: relative;
+	width: calc(50% - .5em / 2);
+}
+.gallery figure.image > a, .gallery figure.image > div { flex-direction: column; flex-grow: 1; margin: 0; }
+.gallery figure.image img { display: block; height: auto; max-width: 100% !important; width: auto; }
+.gallery figure.image figcaption,
+.gallery figure.image:has(figcaption)::before { bottom: 0; left: 0; max-height: 100%; position: absolute; right: 0; }
+.gallery figure.image:has(figcaption)::before {
+	backdrop-filter: blur(3px);
+	content: "";
+	height: 100%;
+	-webkit-mask-image: linear-gradient(0deg, #000 20%, transparent);
+	mask-image: linear-gradient(0deg, #000 20%, transparent);
+	max-height: 3em;
+	pointer-events: none;
+}
+.gallery figure.image figcaption {
+	background: linear-gradient(0deg, rgba(0,0,0,.4), transparent);
+	box-sizing: border-box;
+	color: #fff;
+	font-size: 13px;
+	margin: 0;
+	overflow: auto;
+	padding: 1em;
+	scrollbar-color: hsla(0,0%,100%,.8) transparent;
+	scrollbar-gutter: stable both-edges;
+	scrollbar-width: thin;
+	text-align: center;
+	text-shadow: 0 0 1.5px #000;
+	will-change: transform;
+}
+.gallery figure.image figcaption img { display: inline; }
+.gallery figure.image figcaption a { color: inherit; }
+.gallery figcaption { flex-basis: 100%; flex-grow: 1; text-align: center; }
+.gallery:not(.cropped) figure.image { margin-bottom: auto; margin-top: 0; }
+.gallery.cropped figure.image { align-self: inherit; }
+.gallery.cropped figure.image > a, .gallery.cropped figure.image > div { display: flex; }
+.gallery.cropped figure.image a, .gallery.cropped figure.image img { flex: 1 0 0%; height: 100%; object-fit: cover; width: 100%; }
+.gallery[data-columns="1"] figure.image { width: 100%; }
+
+@media (min-width: 600px) {
+	.gallery[data-columns="3"] figure.image { width: calc(33.33333% - .5em * .66667); }
+	.gallery[data-columns="4"] figure.image { width: calc(25% - .5em * .75); }
+	.gallery[data-columns="5"] figure.image { width: calc(20% - .5em * .8); }
+	.gallery[data-columns="6"] figure.image { width: calc(16.66667% - .5em * .83333); }
+	.gallery[data-columns="7"] figure.image { width: calc(14.28571% - .5em * .85714); }
+	.gallery[data-columns="8"] figure.image { width: calc(12.5% - .5em * .875); }
+}
+.gallery.align-left, .gallery.align-right { max-width: 420px; width: 100%; }
+.gallery.align-center { justify-content: center; }
+
+.code { box-sizing: border-box; }
+.code code { direction: ltr; display: block; font-family: inherit; overflow-wrap: break-word; text-align: initial; white-space: break-spaces; }
+
+.quote { box-sizing: border-box; overflow-wrap: break-word; }
+.quote > cite { display: block; }
+
+.pullquote { box-sizing: border-box; margin: 0 0 1em; overflow-wrap: break-word; padding: 4em 0; text-align: center; }
+.pullquote blockquote, .pullquote p { color: inherit; }
+.pullquote blockquote { margin: 0; }
+.pullquote p { margin-top: 0; }
+.pullquote p:last-child { margin-bottom: 0; }
+.pullquote.align-left, .pullquote.align-right { max-width: 420px; }
+.pullquote cite, .pullquote footer { position: relative; }
+.pullquote :where(cite) { color: inherit; display: block; }
+:where(.pullquote) { font-size: 1.5em; line-height: 1.6; }
+
+/* Columns stack below 782px, core's own breakpoint. */
+.columns { box-sizing: border-box; display: flex; flex-wrap: wrap !important; align-items: normal !important; gap: 2em; }
+.columns > * { margin: 0; }
+@media (min-width: 782px) {
+	.columns { flex-wrap: nowrap !important; }
+	.columns > .column { flex-basis: 0; flex-grow: 1; }
+	.columns > .column[style*=flex-basis] { flex-grow: 0; }
+}
+@media (max-width: 781px) {
+	.columns > .column { flex-basis: 100% !important; }
+}
+:where(.columns) { margin-bottom: 1.75em; }
+.column { flex-grow: 1; min-width: 0; overflow-wrap: break-word; word-break: break-word; }
+
+/* Embeds: an aspect-* class (from core's embed aspect classes) sizes the frame
+   with the padding-top trick and stretches the iframe over it. */
+.embed { overflow-wrap: break-word; }
+.embed :where(figcaption) { margin-bottom: 1em; margin-top: .5em; }
+.embed iframe { max-width: 100%; }
+.embed-frame { position: relative; }
+.embed[class*="aspect-"] .embed-frame::before { content: ""; display: block; padding-top: 50%; }
+.embed[class*="aspect-"] iframe { bottom: 0; height: 100%; left: 0; position: absolute; right: 0; top: 0; width: 100%; }
+.embed.aspect-21-9 .embed-frame::before { padding-top: 42.85%; }
+.embed.aspect-18-9 .embed-frame::before { padding-top: 50%; }
+.embed.aspect-16-9 .embed-frame::before { padding-top: 56.25%; }
+.embed.aspect-4-3 .embed-frame::before { padding-top: 75%; }
+.embed.aspect-1-1 .embed-frame::before { padding-top: 100%; }
+.embed.aspect-9-16 .embed-frame::before { padding-top: 177.77%; }
+.embed.aspect-1-2 .embed-frame::before { padding-top: 200%; }
